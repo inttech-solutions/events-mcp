@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "solutions.int-tech/events",
+  "title": "AEGIS Events",
+  "description": "Read-only search of risk events from open news sources by place, point and radius, category and date.",
+  "version": "1.0.0",
+  "websiteUrl": "https://console.int-tech.solutions/docs",
+  "repository": {
+    "url": "https://github.com/inttech-solutions/events-mcp",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.int-tech.solutions"
+    }
+  ]
+}
