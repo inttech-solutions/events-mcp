@@ -7,7 +7,7 @@ importance and source links. Search by country, address, a point plus radius
 (`near_lat`, `near_lon`, `radius_km`), category and date.
 
 This repository holds documentation and registry metadata only. The server is
-hosted by [INT-TECH](https://int-tech.solutions) at:
+hosted by [INT-TECH](https://www.int-tech.solutions) at:
 
 ```
 https://mcp.int-tech.solutions
