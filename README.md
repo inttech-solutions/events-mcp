@@ -78,7 +78,7 @@ paging through `search_events`. More prompts: [examples/prompts.md](examples/pro
 
 | Plan | Price (USD) | Requests | Max date window |
 | --- | --- | --- | --- |
-| Free | free | 50 a month | 90 days |
+| Free | free | 50 a month | unlimited |
 | Pro | $19 a month or $180 a year | 500 a month | 365 days |
 | Team | $79 a month or $780 a year | 3,000 a month | 730 days |
 | Enterprise | contact us | custom | custom |
@@ -92,4 +92,4 @@ apps. Plan details in the console are authoritative.
 - Developer docs: https://console.int-tech.solutions/docs
 - Terms: https://console.int-tech.solutions/legal/terms
 - Privacy: https://console.int-tech.solutions/legal/privacy
-- Support: info@int-tech.solutions, +90 531 655 3508 (also https://mcp.int-tech.solutions/support)
+- Support: info@int-tech.solutions (also https://mcp.int-tech.solutions/support)
