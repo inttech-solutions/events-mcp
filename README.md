@@ -1,4 +1,4 @@
-# AEGIS Events MCP
+# AEGIS Risk Events MCP
 
 A hosted, read-only MCP server for security events extracted from the news:
 protests, strikes, crime, terrorism, accidents, natural hazards and political
@@ -24,18 +24,16 @@ Sign-up is closed for now. For a new account, contact
 If you already have an account:
 
 1. Sign in at [console.int-tech.solutions](https://console.int-tech.solutions).
-2. Create an API key in the console, or connect an app with OAuth and choose
-   "Continue with your AEGIS Events account".
+2. Create an API key in the console, or connect an app with OAuth and choose "Sign in to the console".
 3. Upgrade when you need more (see Limits).
 
 ## Connect
 
 **Claude (claude.ai, Desktop)**: Settings, Connectors, Add custom connector,
-URL `https://mcp.int-tech.solutions`. Sign in with your AEGIS Events account.
+URL `https://mcp.int-tech.solutions`. Sign in with your AEGIS account.
 
 **ChatGPT**: Settings, Apps / Connectors, add a custom connector with the same
-URL (developer mode may be required on your plan). Sign in with your AEGIS
-Events account.
+URL (developer mode may be required on your plan). Sign in with your AEGIS account.
 
 **Claude Code**:
 
