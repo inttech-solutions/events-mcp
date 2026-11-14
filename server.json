@@ -3,8 +3,8 @@
   "name": "solutions.int-tech/events",
   "title": "AEGIS Risk Events",
   "description": "Read-only search of security events from the news by place, point and radius, category and date.",
-  "version": "1.0.0",
-  "websiteUrl": "https://console.int-tech.solutions/docs",
+  "version": "1.0.1",
+  "websiteUrl": "https://www.int-tech.solutions/mcp",
   "repository": {
     "url": "https://github.com/inttech-solutions/events-mcp",
     "source": "github"
