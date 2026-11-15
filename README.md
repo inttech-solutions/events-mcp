@@ -18,14 +18,11 @@ an API key.
 
 ## Get access
 
-Sign-up is closed for now. For a new account, contact
-[info@int-tech.solutions](mailto:info@int-tech.solutions).
+Create a free account at [console.int-tech.solutions](https://console.int-tech.solutions/signup)
+with email or Google. You get 50 credits a month, no card needed.
 
-If you already have an account:
-
-1. Sign in at [console.int-tech.solutions](https://console.int-tech.solutions).
-2. Create an API key in the console, or connect an app with OAuth and choose "Sign in to the console".
-3. Upgrade when you need more (see Limits).
+1. Connect an app with OAuth (choose "Sign in to the console"), or create an API key in the console.
+2. Upgrade when you need more (see Limits). Pro and Team open when card payments go live.
 
 ## Connect
 
