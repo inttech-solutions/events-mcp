@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "aegis-risk-events": {
+      "type": "http",
+      "url": "https://mcp.int-tech.solutions"
+    }
+  }
+}

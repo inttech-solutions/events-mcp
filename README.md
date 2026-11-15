@@ -32,27 +32,50 @@ URL `https://mcp.int-tech.solutions`. Sign in with your AEGIS account.
 **ChatGPT**: Settings, Apps / Connectors, add a custom connector with the same
 URL (developer mode may be required on your plan). Sign in with your AEGIS account.
 
-**Claude Code**:
+**Claude Code**: this repository ships a project `.mcp.json`, so inside a clone
+the server is already configured. Or add it yourself and sign in with OAuth
+through `/mcp`:
 
 ```bash
-claude mcp add --transport http aegis-events https://mcp.int-tech.solutions \
-  --header "Authorization: Bearer aegis_live_..."
+claude mcp add --transport http aegis-risk-events https://mcp.int-tech.solutions
 ```
 
-**Cursor** (`~/.cursor/mcp.json`) and other clients that read `mcpServers`:
+With an API key instead of OAuth, keep the key in an environment variable, not in a file:
+
+```bash
+claude mcp add --transport http aegis-risk-events https://mcp.int-tech.solutions \
+  --header "Authorization: Bearer $AEGIS_API_KEY"
+```
+
+**Cursor**: the project file `.cursor/mcp.json` in this repository is enough
+(Cursor signs you in with OAuth). For all projects, put the same block in
+`~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "aegis-events": {
-      "url": "https://mcp.int-tech.solutions",
-      "headers": { "Authorization": "Bearer aegis_live_..." }
+    "aegis-risk-events": {
+      "url": "https://mcp.int-tech.solutions"
     }
   }
 }
 ```
 
-Never share a key. Keys are created and revoked in the console.
+With an API key, read it from the environment so it never lands in a file:
+
+```json
+{
+  "mcpServers": {
+    "aegis-risk-events": {
+      "url": "https://mcp.int-tech.solutions",
+      "headers": { "Authorization": "Bearer ${env:AEGIS_API_KEY}" }
+    }
+  }
+}
+```
+
+Do not commit a key. If one leaks, revoke it in the console.
+
 
 ## Tools
 
@@ -71,7 +94,7 @@ paging through `search_events`. More prompts: [examples/prompts.md](examples/pro
 
 ## Limits
 
-| Plan | Price (USD) | Requests | Max date window |
+| Plan | Price (USD) | Credits | Max date window |
 | --- | --- | --- | --- |
 | Free | free | 50 a month | unlimited |
 | Pro | $19 a month or $180 a year | 500 a month | 365 days |
