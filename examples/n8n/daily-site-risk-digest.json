@@ -3,9 +3,9 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Daily risk digest for your sites\n\nEvery morning this workflow asks the **AEGIS Risk Events** MCP server what happened in the last 24 hours around each of your sites (offices, warehouses, hotels, event venues) and posts one digest per site: protests, strikes, crime, attacks, accidents and natural hazards from the news, each with its source link.\n\nNo AI model is needed: the MCP Client node calls the `search_events` tool directly.\n\n### Setup (5 minutes)\n1. Create a free account at https://console.int-tech.solutions/signup (50 credits a month, no card) and create an API key.\n2. In **Search events near site**, add a *Bearer Auth* credential with that key.\n3. Edit the site list in **Your sites** (name, lat, lon, radius in km, up to 50).\n4. Pick where the digest goes in **Send digest** (Slack here; swap for Email, Teams or Telegram).\n\n### Cost\nOne credit per site per day. 3 sites = about 90 credits a month.\n\n### Limits\nCoverage is densest in Turkey and Europe. An empty result does not prove an area was calm.",
-        "height": 620,
-        "width": 420
+        "content": "## Daily risk digest for your sites\n\nGet a morning briefing on what happened around your offices, warehouses, hotels or venues: protests, strikes, crime, attacks, accidents and natural hazards reported in the news, each with its source link. Built for security, travel-risk and operations teams.\n\n### How it works\n1. A schedule starts the workflow every morning at 07:00.\n2. **Your sites** lists the places to watch (name, latitude, longitude, radius in km).\n3. **Search events near site** calls the `search_events` tool of the AEGIS Risk Events MCP server for the last 24 hours. No AI model is used.\n4. **Build digest** turns the results into one short message per site.\n5. **Send digest** posts it to Slack.\n\n### Setup\n1. Create a free account at https://console.int-tech.solutions/signup (50 credits a month, no card) and create an API key.\n2. In **Search events near site**, create a *Bearer Auth* credential and paste the key.\n3. Edit the sites in **Your sites**.\n4. In **Send digest**, connect Slack and choose a channel.\n\n### Customization\nSwap Slack for Email, Teams or Telegram. Add `categories` or `min_importance` to the search to narrow it. Each site uses one credit per run. Coverage is densest in Turkey and Europe; an empty result does not prove an area was calm.",
+        "height": 760,
+        "width": 460
       },
       "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa1",
       "name": "About this workflow",
@@ -107,26 +107,26 @@
     },
     {
       "parameters": {
-        "content": "### Your sites\nOne line per site: name, latitude, longitude and radius in km (1 to 50). Each site costs one credit per run.",
-        "height": 200,
-        "width": 220,
-        "color": 5
+        "content": "### Places to watch\nOne line per site: name, latitude, longitude and radius in km (1 to 50).",
+        "height": 180,
+        "width": 200,
+        "color": 7
       },
       "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa7",
       "name": "Note: sites",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        160,
-        -240
+        170,
+        -220
       ]
     },
     {
       "parameters": {
-        "content": "### Search\nCalls the `search_events` tool of https://mcp.int-tech.solutions with a Bearer Auth credential (your AEGIS API key). Change `date_from`, add `categories` (see `list_categories`) or `min_importance` to narrow it.",
-        "height": 200,
-        "width": 220,
-        "color": 5
+        "content": "### Search the news\nCalls `search_events` on https://mcp.int-tech.solutions with your AEGIS API key (Bearer Auth). One credit per site.",
+        "height": 180,
+        "width": 200,
+        "color": 7
       },
       "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa8",
       "name": "Note: search",
@@ -134,7 +134,23 @@
       "typeVersion": 1,
       "position": [
         390,
-        -240
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Format and send\nBuilds one message per site (up to 10 events, each with its source) and posts it to Slack.",
+        "height": 180,
+        "width": 200,
+        "color": 7
+      },
+      "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa9",
+      "name": "Note: send",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        -220
       ]
     }
   ],
