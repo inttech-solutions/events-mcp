@@ -8,6 +8,7 @@ built-in MCP nodes (n8n 1.x with the MCP Client nodes, tested on 2.48) and a
 | File | What it does | AI model |
 | --- | --- | --- |
 | `daily-site-risk-digest.json` | Every morning, searches the last 24 hours around each of your sites and posts one digest per site to Slack | none: the MCP Client node calls `search_events` directly |
+| `sheets-new-site-risk-summary.json` | When a site (latitude, longitude, radius) is added to Google Sheets, writes its last-30-day risk summary into the same row | none |
 | `risk-events-chat-agent.json` | Chat with an AI agent that answers "what happened near X" with source links | yes (Anthropic node; swap for any chat model) |
 
 Never put the key in the workflow JSON; keep it in the n8n credential.

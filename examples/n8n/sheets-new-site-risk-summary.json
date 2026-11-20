@@ -1,0 +1,261 @@
+{
+  "name": "Risk summary for each new site added to Google Sheets (AEGIS Risk Events MCP)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Risk summary for each new site in Google Sheets\n\nAdd a row (an office, warehouse, hotel or event venue) to a sheet and get, in the same row, what happened around it in the last 30 days: number of news-reported risk events, the main categories and the three most important events with source links. Useful for travel-risk, logistics and site-selection checklists.\n\n### How it works\n1. **New site row** fires when a row is added to your sheet.\n2. **Check the row** reads latitude, longitude and radius (default 10 km, max 50) and skips rows without coordinates.\n3. **Count events by category** calls the AEGIS Risk Events MCP tool `event_stats` for the last 30 days.\n4. **Top events** calls `search_events`, sorted by importance, for the three most important events.\n5. **Build summary** writes a short text, and **Write summary to the row** updates the same row.\n\n### Setup\n1. Make a sheet with the columns `Site`, `Latitude`, `Longitude`, `Radius km`, `Events (30 days)`, `Main categories`, `Top events`, `Checked on`.\n2. Create a free account at https://console.int-tech.solutions/signup (50 credits a month, no card) and an API key. Add it as a *Bearer Auth* credential in both MCP nodes.\n3. Connect Google Sheets in the trigger and the update node and pick your sheet.\n\n### Customization\nChange the 30-day window in both MCP nodes, add `categories` to focus on protests or crime, or post the summary to Slack as well. Each new row uses 2 credits.",
+        "height": 800,
+        "width": 480
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-ccccccccccc1",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-ccccccccccc2",
+      "name": "New site row",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Keep rows with valid coordinates; radius defaults to 10 km, capped at 50.\nconst out = [];\nfor (const item of $input.all()) {\n  const r = item.json;\n  const lat = parseFloat(String(r['Latitude'] ?? '').replace(',', '.'));\n  const lon = parseFloat(String(r['Longitude'] ?? '').replace(',', '.'));\n  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) continue;\n  let radius = parseFloat(String(r['Radius km'] ?? '').replace(',', '.'));\n  if (!Number.isFinite(radius) || radius <= 0) radius = 10;\n  radius = Math.min(radius, 50);\n  out.push({ json: {\n    row_number: r.row_number,\n    site: r['Site'] || `${lat}, ${lon}`,\n    lat, lon, radius_km: radius,\n    date_from: $now.minus({ days: 30 }).toFormat('yyyy-MM-dd'),\n  } });\n}\nreturn out;"
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-ccccccccccc3",
+      "name": "Check the row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.int-tech.solutions",
+        "authentication": "bearerAuth",
+        "tool": {
+          "__rl": true,
+          "mode": "id",
+          "value": "event_stats"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ JSON.stringify({ group_by: 'category', near_lat: $json.lat, near_lon: $json.lon, radius_km: $json.radius_km, date_from: $json.date_from }) }}",
+        "options": {}
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-ccccccccccc4",
+      "name": "Count events by category",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.int-tech.solutions",
+        "authentication": "bearerAuth",
+        "tool": {
+          "__rl": true,
+          "mode": "id",
+          "value": "search_events"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ JSON.stringify({ near_lat: $('Check the row').item.json.lat, near_lon: $('Check the row').item.json.lon, radius_km: $('Check the row').item.json.radius_km, date_from: $('Check the row').item.json.date_from, sort: 'importance', limit: 3 }) }}",
+        "options": {}
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-ccccccccccc5",
+      "name": "Top events",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// One summary per row: counts by category and the three most important events.\nconst rows = $('Check the row').all();\nconst stats = $('Count events by category').all();\n\nreturn $input.all().map((item, i) => {\n  const row = rows[i].json;\n  const s = stats[i].json.structuredContent?.result ?? {};\n  const buckets = (s.buckets ?? []).slice().sort((a, b) => b.count - a.count);\n  const events = item.json.structuredContent?.result?.events ?? [];\n  const top = events.map((e) => {\n    const src = (e.sources ?? [])[0]?.url;\n    return `${(e.occurred_at ?? '').slice(0, 10)}: ${e.description}${src ? ` (${src})` : ''}`;\n  });\n  return { json: {\n    row_number: row.row_number,\n    'Events (30 days)': s.total ?? 0,\n    'Main categories': buckets.slice(0, 3).map((b) => `${b.label} ${b.count}`).join(', ') || 'none found',\n    'Top events': top.join('\\n') || 'No events found in the news for this area. That does not prove it was calm.',\n    'Checked on': $now.toFormat('yyyy-MM-dd'),\n  } };\n});\n"
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-ccccccccccc6",
+      "name": "Build summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "row_number"
+          ]
+        },
+        "options": {}
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-ccccccccccc7",
+      "name": "Write summary to the row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Read the new row\nNeeds `Latitude` and `Longitude` (comma or dot decimals). `Radius km` is optional (default 10, max 50). Rows without coordinates are skipped.",
+        "height": 200,
+        "width": 220,
+        "color": 7
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-ccccccccccc8",
+      "name": "Note: row",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        170,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Ask AEGIS Risk Events\nTwo MCP calls on https://mcp.int-tech.solutions with your API key (Bearer Auth): counts by category, then the 3 most important events. 2 credits per row.",
+        "height": 200,
+        "width": 440,
+        "color": 7
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-ccccccccccc9",
+      "name": "Note: MCP",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Write back\nFills `Events (30 days)`, `Main categories`, `Top events` and `Checked on` in the same row (matched on row number).",
+        "height": 200,
+        "width": 220,
+        "color": 7
+      },
+      "id": "7d3f9a20-3333-4c3c-9e33-cccccccccc10",
+      "name": "Note: write",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -240
+      ]
+    }
+  ],
+  "connections": {
+    "New site row": {
+      "main": [
+        [
+          {
+            "node": "Check the row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check the row": {
+      "main": [
+        [
+          {
+            "node": "Count events by category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Count events by category": {
+      "main": [
+        [
+          {
+            "node": "Top events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Top events": {
+      "main": [
+        [
+          {
+            "node": "Build summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build summary": {
+      "main": [
+        [
+          {
+            "node": "Write summary to the row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
