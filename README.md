@@ -76,6 +76,13 @@ With an API key, read it from the environment so it never lands in a file:
 
 Do not commit a key. If one leaks, revoke it in the console.
 
+**Cline**: add `{"type": "streamableHttp", "url": "https://mcp.int-tech.solutions"}`
+under `mcpServers` in `cline_mcp_settings.json`. Agents can follow
+[llms-install.md](llms-install.md).
+
+**n8n**: use the built-in MCP Client nodes with a Bearer Auth credential. Ready
+workflows (daily digest for your sites, chat agent) are in [examples/n8n](examples/n8n).
+
 
 ## Tools
 

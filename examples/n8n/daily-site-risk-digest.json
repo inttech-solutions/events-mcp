@@ -1,0 +1,191 @@
+{
+  "name": "Daily risk digest for your sites (AEGIS Risk Events MCP)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Daily risk digest for your sites\n\nEvery morning this workflow asks the **AEGIS Risk Events** MCP server what happened in the last 24 hours around each of your sites (offices, warehouses, hotels, event venues) and posts one digest per site: protests, strikes, crime, attacks, accidents and natural hazards from the news, each with its source link.\n\nNo AI model is needed: the MCP Client node calls the `search_events` tool directly.\n\n### Setup (5 minutes)\n1. Create a free account at https://console.int-tech.solutions/signup (50 credits a month, no card) and create an API key.\n2. In **Search events near site**, add a *Bearer Auth* credential with that key.\n3. Edit the site list in **Your sites** (name, lat, lon, radius in km, up to 50).\n4. Pick where the digest goes in **Send digest** (Slack here; swap for Email, Teams or Telegram).\n\n### Cost\nOne credit per site per day. 3 sites = about 90 credits a month.\n\n### Limits\nCoverage is densest in Turkey and Europe. An empty result does not prove an area was calm.",
+        "height": 620,
+        "width": 420
+      },
+      "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa1",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa2",
+      "name": "Every morning at 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// One item per site. radius_km: 1 to 50.\nreturn [\n  { json: { site: 'Istanbul office', lat: 41.0082, lon: 28.9784, radius_km: 5 } },\n  { json: { site: 'Berlin warehouse', lat: 52.5200, lon: 13.4050, radius_km: 10 } },\n  { json: { site: 'Paris hotel', lat: 48.8566, lon: 2.3522, radius_km: 3 } },\n];"
+      },
+      "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa3",
+      "name": "Your sites",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.int-tech.solutions",
+        "authentication": "bearerAuth",
+        "tool": {
+          "__rl": true,
+          "mode": "id",
+          "value": "search_events"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ JSON.stringify({ near_lat: $json.lat, near_lon: $json.lon, radius_km: $json.radius_km, date_from: $now.minus({ days: 1 }).toFormat('yyyy-MM-dd'), sort: 'recency', limit: 20 }) }}",
+        "options": {}
+      },
+      "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa4",
+      "name": "Search events near site",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// One Slack-formatted digest per site. Items arrive in the same order as \"Your sites\".\nconst sites = $('Your sites').all();\nconst label = (slug) => (slug || '').replace(/-/g, ' ');\n\nreturn $input.all().map((item, i) => {\n  const site = sites[i].json;\n  const events = item.json.structuredContent?.result?.events ?? [];\n  const header = `*${site.site}* (${site.radius_km} km): ${events.length} event${events.length === 1 ? '' : 's'} in the last 24 hours`;\n  const lines = events.slice(0, 10).map((e) => {\n    const src = (e.sources ?? [])[0]?.url;\n    const day = (e.occurred_at ?? '').slice(0, 10);\n    return `• ${day} · _${label(e.category?.event)}_ · ${e.description}${src ? ` <${src}|source>` : ''}`;\n  });\n  if (events.length > 10) lines.push(`…and ${events.length - 10} more`);\n  if (events.length === 0) lines.push('No events found in the news for this area. That does not prove it was calm.');\n  return { json: { site: site.site, count: events.length, text: [header, ...lines].join('\\n') } };\n});\n"
+      },
+      "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa5",
+      "name": "Build digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#security-alerts",
+          "mode": "name"
+        },
+        "text": "={{ $json.text }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa6",
+      "name": "Send digest",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Your sites\nOne line per site: name, latitude, longitude and radius in km (1 to 50). Each site costs one credit per run.",
+        "height": 200,
+        "width": 220,
+        "color": 5
+      },
+      "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa7",
+      "name": "Note: sites",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Search\nCalls the `search_events` tool of https://mcp.int-tech.solutions with a Bearer Auth credential (your AEGIS API key). Change `date_from`, add `categories` (see `list_categories`) or `min_importance` to narrow it.",
+        "height": 200,
+        "width": 220,
+        "color": 5
+      },
+      "id": "0b1f4c3e-1111-4a1a-9c11-aaaaaaaaaaa8",
+      "name": "Note: search",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        390,
+        -240
+      ]
+    }
+  ],
+  "connections": {
+    "Every morning at 07:00": {
+      "main": [
+        [
+          {
+            "node": "Your sites",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Your sites": {
+      "main": [
+        [
+          {
+            "node": "Search events near site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search events near site": {
+      "main": [
+        [
+          {
+            "node": "Build digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build digest": {
+      "main": [
+        [
+          {
+            "node": "Send digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
