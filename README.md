@@ -1,5 +1,7 @@
 # AEGIS Risk Events MCP
 
+[![Listed on mcpservers.org](https://mcpservers.org/badge.svg)](https://mcpservers.org/servers/inttech-solutions/events-mcp)
+
 A hosted, read-only MCP server for security events extracted from the news:
 protests, strikes, crime, terrorism, accidents, natural hazards and political
 unrest. Each event is one English sentence with its date, place, category,
